@@ -61,12 +61,8 @@ def register_view(request):
 @require_POST
 @login_required
 def logout_view(request):
-    """
-    Logs out the user via POST request only (prevents CSRF attacks)
-    """
     logout(request)
-    messages.info(request, "You have been logged out.")
-    return redirect('login')    
+    return redirect('core/login')    
 
 
 @login_required
@@ -198,6 +194,15 @@ def dashboard_view(request):
         'days_tracked': len(chart_data),
     }
     return render(request, 'core/dashboard.html', context)
+
+@login_required
+def deleteAcc_view(request):
+    if request.method == 'POST':
+        owner = request.user
+        logout(request)
+        owner.delete()
+        return render(request, 'core/register.html', {'message': 'Account deleted successfully'})
+    return render(request, 'core/profile.html')
 
 
 @login_required

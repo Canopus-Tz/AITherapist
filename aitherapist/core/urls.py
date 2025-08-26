@@ -14,6 +14,7 @@ urlpatterns = [
     path('chat/', views.chat_view, name='chat'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('profile/', views.profile_view, name='profile'),
+    path('deleteAcc/', views.deleteAcc_view, name='deleteAcc'),
     
     # AJAX endpoints
     path('send-message/', views.send_message, name='send_message'),
