@@ -1,0 +1,246 @@
+<!-- core/templates/core/dashboard.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - AI Therapist{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-primary mb-1">Your Wellness Dashboard</h2>
+        <p class="text-muted mb-0">Track your mental health journey and discover insights</p>
+    </div>
+    <div>
+        <a href="{% url 'chat' %}" class="btn btn-primary">
+            <i class="bi bi-chat-dots me-2"></i>Continue Chatting
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Total Conversations</h6>
+                        <h2 class="mb-0">{{ total_stats.total }}</h2>
+                    </div>
+                    <i class="bi bi-chat-square-dots" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Positive Moments</h6>
+                        <h2 class="mb-0">{{ mood_percentages.positive }}%</h2>
+                    </div>
+                    <i class="bi bi-emoji-smile" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Days Tracked</h6>
+                        <h2 class="mb-0">{{ days_tracked }}</h2>
+                    </div>
+                    <i class="bi bi-calendar-check" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">This Week</h6>
+                        <h2 class="mb-0">{{ weekly_stats.total }}</h2>
+                    </div>
+                    <i class="bi bi-graph-up" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Mood Trend Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up me-2 text-primary"></i>Mood Trends (Last 30 Days)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="moodTrendChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mood Distribution -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-pie-chart me-2 text-primary"></i>Mood Distribution
+                </h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="moodDistributionChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Insights and Recent Activity -->
+<div class="row">
+    <!-- Insights -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightbulb me-2 text-warning"></i>Personal Insights
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if insights %}
+                    {% for insight in insights %}
+                        <div class="insight-card mb-3 p-3 rounded {% if insight.type == 'positive' %}bg-success{% elif insight.type == 'growth' %}bg-info{% elif insight.type == 'milestone' %}bg-warning{% elif insight.type == 'support' %}bg-danger{% else %}bg-secondary{% endif %} bg-opacity-10">
+                            <div class="d-flex align-items-start">
+                                <i class="bi {{ insight.icon }} me-3 mt-1 {% if insight.type == 'positive' %}text-success{% elif insight.type == 'growth' %}text-info{% elif insight.type == 'milestone' %}text-warning{% elif insight.type == 'support' %}text-danger{% else %}text-secondary{% endif %}" style="font-size: 1.2rem;"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ insight.title }}</h6>
+                                    <p class="mb-0 text-muted small">{{ insight.message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-chat-dots d-block mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0">Start chatting to see personalized insights about your mental health journey!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history me-2 text-info"></i>Recent Activity
+                </h5>
+                <a href="{% url 'chat' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_chats %}
+                    <div class="recent-chats" style="max-height: 400px; overflow-y: auto;">
+                        {% for chat in recent_chats %}
+                            <div class="recent-chat-item p-2 mb-2 rounded border">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <small class="text-muted">{{ chat.timestamp|date:"M d, H:i" }}</small>
+                                    <span class="badge {% if chat.sentiment == 'positive' %}bg-success{% elif chat.sentiment == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {% if chat.sentiment == 'positive' %}
+                                            <i class="bi bi-emoji-smile me-1"></i>Positive
+                                        {% elif chat.sentiment == 'negative' %}
+                                            <i class="bi bi-emoji-frown me-1"></i>Negative
+                                        {% else %}
+                                            <i class="bi bi-emoji-neutral me-1"></i>Neutral
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <p class="mb-0 small text-truncate" style="max-width: 100%;">
+                                    <strong>You:</strong> {{ chat.user_message|truncatechars:60 }}
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-chat-square-dots d-block mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0">No recent conversations.<br><a href="{% url 'chat' %}" class="text-decoration-none">Start your first chat!</a></p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Weekly Summary -->
+{% if weekly_stats.total > 0 %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-calendar-week me-2"></i>This Week's Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h4 class="text-primary mb-0">{{ weekly_stats.total }}</h4>
+                            <small class="text-muted">Total Conversations</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h4 class="text-success mb-0">{{ weekly_stats.positive }}</h4>
+                            <small class="text-muted">Positive Moments</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h4 class="text-secondary mb-0">{{ weekly_stats.neutral }}</h4>
+                            <small class="text-muted">Neutral Conversations</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-danger mb-0">{{ weekly_stats.negative }}</h4>
+                        <small class="text-muted">Challenging Moments</small>
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="text-center">
+                    <p class="mb-2">
+                        <strong>Weekly Progress:</strong> 
+                        {% if weekly_stats.positive > weekly_stats.negative %}
+                            <span class="text-success">You had more positive moments this week! 🌟</span>
+                        {% elif weekly_stats.negative > weekly_stats.positive %}
+                            <span class="text-info">This week had some challenges. Remember, it's okay to have difficult days. 💙</span>
+                        {% else %}
+                            <span class="text-primary">This week was balanced. Keep taking care of yourself! 🌸</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

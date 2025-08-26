@@ -1,0 +1,271 @@
+<!-- core/templates/core/chat.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Chat - AI Therapist{% endblock %}
+
+{% block main_class %}container-fluid h-100{% endblock %}
+
+{% block content %}
+<div class="row h-100">
+    <!-- Chat History Sidebar (Hidden on mobile) -->
+    <div class="col-md-3 d-none d-md-block bg-light border-end">
+        <div class="p-3 border-bottom">
+            <h6 class="mb-0">
+                <i class="bi bi-clock-history me-2"></i>Recent Conversations
+            </h6>
+        </div>
+        <div class="chat-history" style="height: calc(100vh - 200px); overflow-y: auto;">
+            {% for chat in recent_chats %}
+                <div class="p-3 border-bottom chat-history-item" data-chat-id="{{ chat.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-truncate" style="max-width: 200px;">
+                                {{ chat.user_message|truncatechars:40 }}
+                            </p>
+                            <small class="text-muted">
+                                {{ chat.timestamp|timesince }} ago
+                                {% if chat.sentiment == 'positive' %}
+                                    <i class="bi bi-emoji-smile text-success ms-1"></i>
+                                {% elif chat.sentiment == 'negative' %}
+                                    <i class="bi bi-emoji-frown text-danger ms-1"></i>
+                                {% else %}
+                                    <i class="bi bi-emoji-neutral text-muted ms-1"></i>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="p-3 text-center text-muted">
+                    <i class="bi bi-chat-dots d-block mb-2" style="font-size: 2rem;"></i>
+                    <p class="mb-0">No conversations yet.<br>Start your first chat!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Main Chat Area -->
+    <div class="col-md-9">
+        <div class="d-flex flex-column h-100">
+            <!-- Chat Header -->
+            <div class="bg-primary text-white p-3 border-bottom">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-light bg-opacity-20 rounded-circle p-2 me-3">
+                            <i class="bi bi-robot" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">AI Therapist</h5>
+                            <small class="opacity-75">
+                                <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.5rem;"></i>
+                                Always here to help
+                            </small>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" id="getCopingStrategy"><i class="bi bi-lightbulb me-2"></i>Get Coping Strategy</a></li>
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="bi bi-graph-up me-2"></i>View Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="clearChat"><i class="bi bi-trash me-2"></i>Clear Chat</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messages Area -->
+            <div class="flex-grow-1 p-3" id="messagesContainer" style="height: calc(100vh - 300px); overflow-y: auto;">
+                <div id="chatMessages">
+                    <!-- Welcome Message -->
+                    <div class="message-wrapper mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="bg-primary text-white rounded-circle p-2 me-3 flex-shrink-0">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div class="message-content bg-light rounded p-3 flex-grow-1">
+                                <p class="mb-2">
+                                    Hello {{ user.first_name|default:user.username }}! 👋 I'm your AI therapist, here to provide a safe space for you to share your thoughts and feelings.
+                                </p>
+                                <p class="mb-2">
+                                    Whether you're feeling stressed, anxious, happy, or anything in between, I'm here to listen and offer support. 
+                                    What's on your mind today?
+                                </p>
+                                <p class="mb-0 small text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Remember: While I can offer support and coping strategies, I'm not a replacement for professional therapy if you need it.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Load recent messages -->
+                    {% for chat in recent_chats reversed %}
+                        <!-- User Message -->
+                        <div class="message-wrapper mb-3">
+                            <div class="d-flex align-items-start justify-content-end">
+                                <div class="message-content bg-primary text-white rounded p-3 me-3 flex-grow-1" style="max-width: 70%;">
+                                    <p class="mb-1">{{ chat.user_message }}</p>
+                                    <small class="opacity-75">{{ chat.timestamp|date:"H:i" }}</small>
+                                </div>
+                                <div class="bg-secondary text-white rounded-circle p-2 flex-shrink-0">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Response -->
+                        <div class="message-wrapper mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-success text-white rounded-circle p-2 me-3 flex-shrink-0">
+                                    <i class="bi bi-robot"></i>
+                                </div>
+                                <div class="message-content bg-light rounded p-3 flex-grow-1" style="max-width: 70%;">
+                                    <p class="mb-1">{{ chat.ai_response|linebreaksbr }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">{{ chat.timestamp|date:"H:i" }}</small>
+                                        <small class="text-muted">
+                                            Mood: 
+                                            {% if chat.sentiment == 'positive' %}
+                                                <span class="text-success">Positive <i class="bi bi-emoji-smile"></i></span>
+                                            {% elif chat.sentiment == 'negative' %}
+                                                <span class="text-danger">Negative <i class="bi bi-emoji-frown"></i></span>
+                                            {% else %}
+                                                <span class="text-muted">Neutral <i class="bi bi-emoji-neutral"></i></span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Typing Indicator -->
+                <div id="typingIndicator" class="message-wrapper mb-3" style="display: none;">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-success text-white rounded-circle p-2 me-3 flex-shrink-0">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="message-content bg-light rounded p-3">
+                            <div class="typing-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Message Input -->
+            <div class="border-top p-3">
+                <form id="chatForm" class="d-flex">
+                    {% csrf_token %}
+                    <div class="flex-grow-1 me-2">
+                        <input type="text" 
+                               class="form-control" 
+                               id="messageInput" 
+                               placeholder="Type your message here..." 
+                               maxlength="1000"
+                               autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="sendButton">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </form>
+                <div class="text-center mt-2">
+                    <small class="text-muted">
+                        Press Enter to send • Your conversations are private and secure
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Coping Strategy Modal -->
+<div class="modal fade" id="copingStrategyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-lightbulb me-2"></i>Coping Strategy
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="copingStrategyContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="getAnotherStrategy">Get Another</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.typing-dots {
+    display: inline-block;
+}
+
+.typing-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    margin: 0 2px;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing {
+    0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.message-content {
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+.chat-history-item:hover {
+    background-color: rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+
+#messagesContainer {
+    scroll-behavior: smooth;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/chat.js' %}"></script>
+{% endblock %}

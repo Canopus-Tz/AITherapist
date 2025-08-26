@@ -1,0 +1,269 @@
+<!-- core/templates/core/profile.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Profile - AI Therapist{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Profile Info -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                            <i class="bi bi-person" style="font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h4 class="mb-1">
+                    {% if user.first_name %}
+                        {{ user.first_name }} {{ user.last_name }}
+                    {% else %}
+                        {{ user.username }}
+                    {% endif %}
+                </h4>
+                <p class="text-muted mb-3">@{{ user.username }}</p>
+                
+                {% if profile.bio %}
+                    <p class="text-muted">{{ profile.bio }}</p>
+                {% endif %}
+                
+                <hr>
+                
+                <!-- Stats -->
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <h5 class="text-primary mb-0">{{ total_chats }}</h5>
+                        <small class="text-muted">Total Chats</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-success mb-0">{{ days_active }}</h5>
+                        <small class="text-muted">Days Active</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="text-muted small">
+                    <i class="bi bi-calendar me-1"></i>
+                    Member since {{ profile.created_at|date:"F Y" }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'chat' %}" class="btn btn-primary">
+                        <i class="bi bi-chat-dots me-2"></i>Start Chatting
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-info">
+                        <i class="bi bi-graph-up me-2"></i>View Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Form -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-gear me-2"></i>Edit Profile
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Personal Information -->
+                    <h6 class="text-primary mb-3">Personal Information</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.first_name.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.last_name.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="bi bi-envelope me-1"></i>Email Address
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.email.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Profile Information -->
+                    <h6 class="text-primary mb-3 mt-4">Profile Information</h6>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.bio.id_for_label }}" class="form-label">
+                            <i class="bi bi-chat-quote me-1"></i>Bio
+                        </label>
+                        {{ form.bio }}
+                        {% if form.bio.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.bio.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Tell us a bit about yourself. This information is private and only visible to you.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.avatar.id_for_label }}" class="form-label">
+                            <i class="bi bi-image me-1"></i>Profile Picture
+                        </label>
+                        {{ form.avatar }}
+                        {% if form.avatar.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.avatar.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Upload a profile picture. Supported formats: JPG, PNG, GIF. Max size: 5MB.
+                        </div>
+                    </div>
+                    
+                    <!-- Save Button -->
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-2"></i>Save Changes
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Account Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-shield-check me-2"></i>Account Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <strong>Username:</strong> {{ user.username }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Email:</strong> {{ user.email }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Date Joined:</strong> {{ user.date_joined|date:"F d, Y" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <strong>Last Login:</strong> {{ user.last_login|date:"F d, Y H:i" }}
+                        </p>
+                        <p class="mb-2">
+                            <strong>Account Status:</strong> 
+                            <span class="badge bg-success">Active</span>
+                        </p>
+                        <p class="mb-2">
+                            <strong>Privacy:</strong> 
+                            <span class="text-success">
+                                <i class="bi bi-shield-check me-1"></i>Protected
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Privacy Notice -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info bg-opacity-10">
+                <h6 class="mb-0 text-info">
+                    <i class="bi bi-info-circle me-2"></i>Privacy & Data
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    All your conversations are encrypted and stored securely
+                </p>
+                <p class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Your data is never shared with third parties
+                </p>
+                <p class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    You can delete your account and data at any time
+                </p>
+                <p class="mb-0">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    AI responses are generated locally and not stored externally
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Preview avatar upload
+    const avatarInput = document.getElementById('{{ form.avatar.id_for_label }}');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // You could add avatar preview functionality here
+                    console.log('Avatar file selected:', file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
