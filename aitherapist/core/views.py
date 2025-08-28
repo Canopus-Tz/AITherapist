@@ -58,6 +58,8 @@ def register_view(request):
     
     return render(request, 'core/register.html', {'form': form})
 
+
+#Does not work
 @require_POST
 @login_required
 def logout_view(request):
