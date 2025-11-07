@@ -14,8 +14,9 @@ from django.db.models import Count, Q
 from django.contrib.auth.models import User
 
 from .forms import CustomUserCreationForm, UserProfileForm, ChatMessageForm
-from .models import UserProfile, Chat, MoodLog
+from .models import UserProfile, Chat, MoodLog, EmailVerificationOTP
 from .ai_therapist import ai_therapist
+from .email_utils import send_otp_email
 
 
 def home(request):
@@ -34,7 +35,7 @@ class CustomLoginView(LoginView):
         return '/chat/'
 
 def register_view(request):
-    """User registration view"""
+    """User registration view - sends OTP for email verification"""
     if request.user.is_authenticated:
         return redirect('chat')
     
@@ -43,28 +44,109 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}! You can now log in.')
+            email = form.cleaned_data.get('email')
             
-            # Automatically log in the user
-            user = authenticate(
-                username=form.cleaned_data['username'],
-                password=form.cleaned_data['password1']
-            )
-            if user:
-                login(request, user)
-                return redirect('chat')
+            # Generate and send OTP
+            otp = EmailVerificationOTP.generate_otp(user, email)
+            
+            # Send OTP email
+            if send_otp_email(user, email, otp.otp_code):
+                messages.success(request, f'Account created for {username}! Please check your email for the verification code.')
+                # Store user ID in session for OTP verification
+                request.session['pending_verification_user_id'] = user.id
+                return redirect('verify_otp')
+            else:
+                messages.error(request, 'Failed to send verification email. Please try again.')
+                user.delete()  # Delete user if email sending fails
     else:
         form = CustomUserCreationForm()
     
     return render(request, 'core/register.html', {'form': form})
 
 
-#Does not work
+def verify_otp_view(request):
+    """OTP verification view - verifies email OTP and logs in user"""
+    # Check if user is already authenticated
+    if request.user.is_authenticated:
+        return redirect('chat')
+    
+    # Check if there's a pending verification user in session
+    user_id = request.session.get('pending_verification_user_id')
+    if not user_id:
+        messages.error(request, 'No pending verification found. Please register again.')
+        return redirect('register')
+    
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        messages.error(request, 'User not found. Please register again.')
+        request.session.pop('pending_verification_user_id', None)
+        return redirect('register')
+    
+    if request.method == 'POST':
+        otp_code = request.POST.get('otp_code', '').strip()
+        
+        if not otp_code or len(otp_code) != 6:
+            messages.error(request, 'Please enter a valid 6-digit OTP code.')
+            return render(request, 'core/verify_otp.html', {'user': user})
+        
+        # Verify OTP
+        is_valid, message = EmailVerificationOTP.verify_otp(user, otp_code)
+        
+        if is_valid:
+            # Clear session
+            request.session.pop('pending_verification_user_id', None)
+            
+            # Log in the user
+            login(request, user)
+            messages.success(request, 'Email verified successfully! Welcome to AI Therapist.')
+            return redirect('chat')
+        else:
+            messages.error(request, message)
+            return render(request, 'core/verify_otp.html', {'user': user})
+    
+    # GET request - show OTP input form
+    return render(request, 'core/verify_otp.html', {'user': user})
+
+
+@require_POST
+def resend_otp_view(request):
+    """Resend OTP verification code"""
+    # Check if user is already authenticated
+    if request.user.is_authenticated:
+        return redirect('chat')
+    
+    # Check if there's a pending verification user in session
+    user_id = request.session.get('pending_verification_user_id')
+    if not user_id:
+        messages.error(request, 'No pending verification found. Please register again.')
+        return redirect('register')
+    
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        messages.error(request, 'User not found. Please register again.')
+        request.session.pop('pending_verification_user_id', None)
+        return redirect('register')
+    
+    # Generate and send new OTP
+    otp = EmailVerificationOTP.generate_otp(user, user.email)
+    
+    if send_otp_email(user, user.email, otp.otp_code):
+        messages.success(request, 'A new verification code has been sent to your email.')
+    else:
+        messages.error(request, 'Failed to send verification email. Please try again.')
+    
+    return redirect('verify_otp')
+
+
 @require_POST
 @login_required
 def logout_view(request):
+    """Logout view - logs out user and redirects to home"""
     logout(request)
-    return redirect('core/login')    
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('home')    
 
 
 @login_required
@@ -199,12 +281,22 @@ def dashboard_view(request):
 
 @login_required
 def deleteAcc_view(request):
+    """Delete account view - shows confirmation on GET, deletes on POST"""
     if request.method == 'POST':
-        owner = request.user
+        user = request.user
+        username = user.username
+        
+        # Delete the user (this will cascade delete related data if models are set up correctly)
+        user.delete()
+        
+        # Logout the user (though user is already deleted, this clears the session)
         logout(request)
-        owner.delete()
-        return render(request, 'core/register.html', {'message': 'Account deleted successfully'})
-    return render(request, 'core/profile.html')
+        
+        messages.success(request, f'Account "{username}" has been deleted successfully.')
+        return redirect('home')
+    
+    # GET request - show confirmation page
+    return render(request, 'core/delete_account_confirm.html')
 
 
 @login_required

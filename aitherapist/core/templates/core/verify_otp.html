@@ -1,0 +1,114 @@
+<!-- core/templates/core/verify_otp.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Verify Email - AI Therapist{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-envelope-check-fill text-primary" style="font-size: 3rem;"></i>
+                    <h2 class="card-title text-primary mt-3">Verify Your Email</h2>
+                    <p class="text-muted">Enter the 6-digit code sent to your email</p>
+                </div>
+                
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Check your email!</strong> We've sent a verification code to <strong>{{ user.email }}</strong>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- OTP Input -->
+                    <div class="mb-4">
+                        <label for="otp_code" class="form-label">
+                            <i class="bi bi-shield-check me-1"></i>Verification Code
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control form-control-lg text-center" 
+                            id="otp_code" 
+                            name="otp_code" 
+                            placeholder="000000" 
+                            maxlength="6" 
+                            pattern="[0-9]{6}" 
+                            required
+                            autocomplete="off"
+                            style="font-size: 1.5rem; letter-spacing: 0.5rem;"
+                            autofocus
+                        >
+                        <div class="form-text">
+                            <i class="bi bi-clock me-1"></i>Code expires in 10 minutes
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Verify & Continue
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="text-muted small mb-2">Didn't receive the code?</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <form method="POST" action="{% url 'resend_otp' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Resend Code
+                            </button>
+                        </form>
+                        <a href="{% url 'register' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Registration
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Help Card -->
+        <div class="card mt-3 border-info">
+            <div class="card-body">
+                <h6 class="text-info mb-2">
+                    <i class="bi bi-question-circle me-2"></i>Need Help?
+                </h6>
+                <ul class="small text-muted mb-0">
+                    <li>Check your spam/junk folder</li>
+                    <li>Make sure you entered the correct email address</li>
+                    <li>The code is 6 digits and expires in 10 minutes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInput = document.getElementById('otp_code');
+    
+    // Auto-format OTP input (only numbers, max 6 digits)
+    otpInput.addEventListener('input', function(e) {
+        // Remove any non-numeric characters
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Limit to 6 digits
+        if (this.value.length > 6) {
+            this.value = this.value.slice(0, 6);
+        }
+    });
+    
+    // Focus on input when page loads
+    otpInput.focus();
+});
+</script>
+{% endblock %}
+

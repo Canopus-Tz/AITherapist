@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from datetime import timedelta
+import random
 
 
 class UserProfile(models.Model):
@@ -88,3 +90,59 @@ class MoodLog(models.Model):
         log.total_chats += 1
         log.save()
         return log
+
+
+class EmailVerificationOTP(models.Model):
+    """OTP model for email verification"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    email = models.EmailField()
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(default=timezone.now)
+    is_verified = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"OTP for {self.email} - {self.otp_code}"
+    
+    def is_expired(self):
+        """Check if OTP has expired (10 minutes)"""
+        expiration_time = self.created_at + timedelta(minutes=10)
+        return timezone.now() > expiration_time
+    
+    @classmethod
+    def generate_otp(cls, user, email):
+        """Generate a new 6-digit OTP for the user"""
+        # Delete any existing unverified OTPs for this user
+        cls.objects.filter(user=user, is_verified=False).delete()
+        
+        # Generate 6-digit OTP
+        otp_code = str(random.randint(100000, 999999))
+        
+        # Create new OTP record
+        otp = cls.objects.create(
+            user=user,
+            email=email,
+            otp_code=otp_code
+        )
+        return otp
+    
+    @classmethod
+    def verify_otp(cls, user, otp_code):
+        """Verify the OTP code for a user"""
+        try:
+            otp = cls.objects.filter(
+                user=user,
+                otp_code=otp_code,
+                is_verified=False
+            ).latest('created_at')
+            
+            if otp.is_expired():
+                return False, "OTP has expired. Please request a new one."
+            
+            otp.is_verified = True
+            otp.save()
+            return True, "OTP verified successfully."
+        except cls.DoesNotExist:
+            return False, "Invalid OTP code. Please try again."

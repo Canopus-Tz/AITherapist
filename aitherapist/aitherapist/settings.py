@@ -135,7 +135,14 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/chat/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+# Email Configuration
+# Gmail SMTP settings - configure with Gmail credentials
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'vendorlinkco@gmail.com'  #Gmail address
+EMAIL_HOST_PASSWORD = 'wdle mmnp midm hccx'  #Gmail App Password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  #use Gmail address as sender
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
