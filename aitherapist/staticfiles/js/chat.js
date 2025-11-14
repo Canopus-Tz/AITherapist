@@ -247,12 +247,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500);
     }
     
+    // Create modal instance once and reuse it
+    const modalElement = document.getElementById('copingStrategyModal');
+    let copingStrategyModal = null;
+    
+    // Function to clean up duplicate modal backdrops
+    function cleanupModalBackdrops() {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        // Keep only the first backdrop, remove the rest
+        if (backdrops.length > 1) {
+            for (let i = 1; i < backdrops.length; i++) {
+                backdrops[i].remove();
+            }
+        }
+    }
+    
+    // Initialize modal instance and set up backdrop cleanup
+    if (modalElement) {
+        copingStrategyModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        
+        // Clean up duplicate backdrops whenever modal is shown
+        modalElement.addEventListener('shown.bs.modal', function() {
+            cleanupModalBackdrops();
+        });
+        
+        // Also clean up on hidden event
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            cleanupModalBackdrops();
+        });
+        
+        // Use MutationObserver to watch for new backdrop creation and remove duplicates immediately
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1 && node.classList && node.classList.contains('modal-backdrop')) {
+                            // New backdrop was added, clean up duplicates
+                            setTimeout(cleanupModalBackdrops, 10);
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Observe the body for backdrop additions
+        observer.observe(document.body, {
+            childList: true,
+            subtree: false
+        });
+    }
+    
     async function showCopingStrategy() {
-        const modal = new bootstrap.Modal(document.getElementById('copingStrategyModal'));
         const contentDiv = document.getElementById('copingStrategyContent');
         
-        // Show modal with loading state
-        modal.show();
+        // Ensure modal instance exists
+        if (!copingStrategyModal && modalElement) {
+            copingStrategyModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        }
+        
+        // Check if modal is already visible
+        const isModalVisible = modalElement && modalElement.classList.contains('show');
+        
+        // Show loading state immediately
         contentDiv.innerHTML = `
             <div class="text-center">
                 <div class="spinner-border text-primary" role="status">
@@ -261,6 +317,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p class="mt-2 text-muted">Getting a personalized coping strategy for you...</p>
             </div>
         `;
+        
+        // Only show modal if it's not already visible
+        if (!isModalVisible && copingStrategyModal) {
+            copingStrategyModal.show();
+            // Clean up backdrops after a short delay to ensure they're created
+            setTimeout(cleanupModalBackdrops, 100);
+        } else {
+            // If modal is already visible, just clean up any duplicate backdrops
+            cleanupModalBackdrops();
+        }
         
         try {
             const response = await fetch('/api/coping-strategy/');

@@ -3,12 +3,221 @@
 // Dashboard functionality
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
+    
+    // Wait for Chart.js to be available
+    if (typeof Chart !== 'undefined') {
+        initializeCharts();
+    } else {
+        // If Chart.js is not loaded yet, wait a bit and try again
+        setTimeout(function() {
+            if (typeof Chart !== 'undefined') {
+                initializeCharts();
+            } else {
+                console.error('Chart.js is not loaded. Please check if the CDN link is working.');
+            }
+        }, 100);
+    }
 });
 
 function initializeDashboard() {
     // Initialize any dashboard-specific functionality
     setupInteractiveElements();
     setupAnimations();
+}
+
+function initializeCharts() {
+    // Check if Chart.js is available
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not available');
+        return;
+    }
+    
+    // Initialize Mood Trend Chart
+    initializeMoodTrendChart();
+    
+    // Initialize Mood Distribution Chart
+    initializeMoodDistributionChart();
+}
+
+function initializeMoodTrendChart() {
+    const ctx = document.getElementById('moodTrendChart');
+    if (!ctx) {
+        console.warn('Mood trend chart canvas not found');
+        return;
+    }
+    
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not available');
+        return;
+    }
+    
+    const chartData = window.chartData || [];
+    
+    // Debug: Log chart data
+    console.log('Chart Data:', chartData);
+    
+    // If no data, show empty state message
+    if (chartData.length === 0) {
+        const cardBody = ctx.closest('.card-body');
+        if (cardBody) {
+            cardBody.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-graph-up d-block mb-2" style="font-size: 2rem;"></i><p class="mb-0">No data available yet.<br>Start chatting to see your mood trends!</p></div>';
+        }
+        return;
+    }
+    
+    // Prepare data for the chart
+    const labels = chartData.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    const positiveData = chartData.map(item => item.positive || 0);
+    const negativeData = chartData.map(item => item.negative || 0);
+    const neutralData = chartData.map(item => item.neutral || 0);
+    
+    try {
+        new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Positive',
+                    data: positiveData,
+                    borderColor: 'rgb(25, 135, 84)',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Neutral',
+                    data: neutralData,
+                    borderColor: 'rgb(108, 117, 125)',
+                    backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Negative',
+                    data: negativeData,
+                    borderColor: 'rgb(220, 53, 69)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+        });
+        console.log('Mood trend chart initialized successfully');
+    } catch (error) {
+        console.error('Error initializing mood trend chart:', error);
+    }
+}
+
+function initializeMoodDistributionChart() {
+    const ctx = document.getElementById('moodDistributionChart');
+    if (!ctx) {
+        console.warn('Mood distribution chart canvas not found');
+        return;
+    }
+    
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not available');
+        return;
+    }
+    
+    const totalStats = window.totalStats || { positive: 0, negative: 0, neutral: 0 };
+    
+    // Debug: Log stats
+    console.log('Total Stats:', totalStats);
+    
+    // Calculate total for percentage calculation
+    const total = totalStats.positive + totalStats.negative + totalStats.neutral;
+    
+    // If no data, show empty state message in the card body instead
+    if (total === 0) {
+        const cardBody = ctx.closest('.card-body');
+        if (cardBody) {
+            cardBody.innerHTML = '<div class="text-center text-muted"><i class="bi bi-info-circle d-block mb-2" style="font-size: 2rem;"></i><p class="mb-0">No data available yet.<br>Start chatting to see your mood distribution!</p></div>';
+        }
+        return;
+    }
+    
+    try {
+        new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Positive', 'Neutral', 'Negative'],
+            datasets: [{
+                data: [totalStats.positive, totalStats.neutral, totalStats.negative],
+                backgroundColor: [
+                    'rgb(25, 135, 84)',
+                    'rgb(108, 117, 125)',
+                    'rgb(220, 53, 69)'
+                ],
+                borderColor: [
+                    'rgb(25, 135, 84)',
+                    'rgb(108, 117, 125)',
+                    'rgb(220, 53, 69)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+        });
+        console.log('Mood distribution chart initialized successfully');
+    } catch (error) {
+        console.error('Error initializing mood distribution chart:', error);
+    }
 }
 
 function setupInteractiveElements() {

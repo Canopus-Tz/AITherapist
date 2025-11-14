@@ -15,7 +15,8 @@ from django.contrib.auth.models import User
 
 from .forms import CustomUserCreationForm, UserProfileForm, ChatMessageForm
 from .models import UserProfile, Chat, MoodLog, EmailVerificationOTP
-from .ai_therapist import ai_therapist
+from .ai_therapist import ai_therapist  #used for sentiment analysis
+from .ai.gemini_client import get_gemini_response  #Gemini for response generation
 from .email_utils import send_otp_email
 
 
@@ -57,7 +58,7 @@ def register_view(request):
                 return redirect('verify_otp')
             else:
                 messages.error(request, 'Failed to send verification email. Please try again.')
-                user.delete()  # Delete user if email sending fails
+                user.delete()  # Delete user if email sending has failed
     else:
         form = CustomUserCreationForm()
     
@@ -105,7 +106,7 @@ def verify_otp_view(request):
             messages.error(request, message)
             return render(request, 'core/verify_otp.html', {'user': user})
     
-    # GET request - show OTP input form
+    #show OTP input form
     return render(request, 'core/verify_otp.html', {'user': user})
 
 
@@ -166,46 +167,45 @@ def chat_view(request):
 @login_required
 @require_POST
 def send_message(request):
-    """Handle AJAX chat message sending"""
+    """Handle chat message sending."""
     try:
         data = json.loads(request.body)
-        user_message = data.get('message', '').strip()
-        
+        user_message = data.get("message", "").strip()
+
         if not user_message:
-            return JsonResponse({'error': 'Message cannot be empty'}, status=400)
-        
-        # Analyze sentiment
+            return JsonResponse({"error": "Message cannot be empty"}, status=400)
+
+        #Sentiment analysis
         sentiment, confidence = ai_therapist.analyze_sentiment(user_message)
-        
-        # Generate AI response
-        ai_response = ai_therapist.generate_response(user_message, sentiment, confidence)
-        
-        # Save chat to database
+
+        #GOOGLE GEMINI RESPONSE
+        ai_response = get_gemini_response(user_message)
+
+        # Save chat
         chat = Chat.objects.create(
             user=request.user,
             user_message=user_message,
             ai_response=ai_response,
             sentiment=sentiment,
-            confidence_score=confidence
+            confidence_score=confidence,
         )
-        
+
         # Update mood log
         MoodLog.update_or_create_daily_log(request.user, sentiment)
-        
-        # Return response
-        return JsonResponse({
-            'success': True,
-            'ai_response': ai_response,
-            'sentiment': sentiment,
-            'confidence': round(confidence, 2),
-            'timestamp': chat.timestamp.strftime('%H:%M')
-        })
-    
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
 
+        return JsonResponse({
+            "success": True,
+            "ai_response": ai_response,
+            "sentiment": sentiment,
+            "confidence": round(confidence, 2),
+            "timestamp": chat.timestamp.strftime("%H:%M")
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 @login_required
 def dashboard_view(request):
@@ -286,16 +286,16 @@ def deleteAcc_view(request):
         user = request.user
         username = user.username
         
-        # Delete the user (this will cascade delete related data if models are set up correctly)
+        #Delete the user and also delete related data
         user.delete()
         
-        # Logout the user (though user is already deleted, this clears the session)
+        #Logout the user
         logout(request)
         
         messages.success(request, f'Account "{username}" has been deleted successfully.')
         return redirect('home')
     
-    # GET request - show confirmation page
+    #shows confirmation page
     return render(request, 'core/delete_account_confirm.html')
 
 
@@ -331,7 +331,7 @@ def profile_view(request):
 
 @login_required
 def get_coping_strategy(request):
-    """AJAX endpoint to get coping strategies"""
+    """get coping strategies"""
     strategy_type = request.GET.get('type', 'general')
     strategy = ai_therapist.get_coping_strategies(strategy_type)
     

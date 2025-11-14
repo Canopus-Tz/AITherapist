@@ -242,5 +242,20 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Store chart data in script tags for safe JSON parsing -->
+<script type="application/json" id="chart-data">{{ chart_data|safe }}</script>
+<script type="application/json" id="total-stats">{"positive": {{ total_stats.positive|default:0 }}, "negative": {{ total_stats.negative|default:0 }}, "neutral": {{ total_stats.neutral|default:0 }}}</script>
+<script>
+    // Parse chart data from the script tags
+    const chartDataElement = document.getElementById('chart-data');
+    window.chartData = chartDataElement ? JSON.parse(chartDataElement.textContent) : [];
+
+    const totalStatsElement = document.getElementById('total-stats');
+    window.totalStats = totalStatsElement ? JSON.parse(totalStatsElement.textContent) : { positive: 0, negative: 0, neutral: 0 };
+    
+    // Debug: Log data to console
+    console.log('Chart data loaded:', window.chartData);
+    console.log('Total stats loaded:', window.totalStats);
+</script>
 <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}
