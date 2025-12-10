@@ -15,8 +15,8 @@ from django.contrib.auth.models import User
 
 from .forms import CustomUserCreationForm, UserProfileForm, ChatMessageForm
 from .models import UserProfile, Chat, MoodLog, EmailVerificationOTP
-from .ai_therapist import ai_therapist  #used for sentiment analysis
-from .ai.gemini_client import get_gemini_response  #Gemini for response generation
+from .ai_therapist import ai_therapist 
+from .ai.gemini_client import get_gemini_response
 from .email_utils import send_otp_email
 
 

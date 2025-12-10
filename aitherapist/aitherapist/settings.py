@@ -11,9 +11,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 
 # Quick-start development settings - unsuitable for production
@@ -143,6 +147,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'vendorlinkco@gmail.com'  #Gmail address
 EMAIL_HOST_PASSWORD = 'wdle mmnp midm hccx'  #Gmail App Password
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  #use Gmail address as sender
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  #useS Gmail address as sender
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
