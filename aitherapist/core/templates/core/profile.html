@@ -12,15 +12,15 @@
             <div class="card-body text-center">
                 <div class="mb-3">
                     {% if profile.avatar %}
-                        <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                        <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid var(--glass-border);">
                     {% else %}
-                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center text-white" style="width: 120px; height: 120px; background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); border: 3px solid var(--glass-border);">
                             <i class="bi bi-person" style="font-size: 3rem;"></i>
                         </div>
                     {% endif %}
                 </div>
                 
-                <h4 class="mb-1">
+                <h4 class="mb-1" style="color: var(--text-primary); font-weight: 600;">
                     {% if user.first_name %}
                         {{ user.first_name }} {{ user.last_name }}
                     {% else %}
@@ -33,21 +33,21 @@
                     <p class="text-muted">{{ profile.bio }}</p>
                 {% endif %}
                 
-                <hr>
+                <hr style="border-color: var(--glass-border);">
                 
                 <!-- Stats -->
                 <div class="row text-center">
-                    <div class="col-6 border-end">
-                        <h5 class="text-primary mb-0">{{ total_chats }}</h5>
+                    <div class="col-6 border-end" style="border-color: var(--glass-border) !important;">
+                        <h5 class="mb-0" style="color: var(--accent-blue);">{{ total_chats }}</h5>
                         <small class="text-muted">Total Chats</small>
                     </div>
                     <div class="col-6">
-                        <h5 class="text-success mb-0">{{ days_active }}</h5>
+                        <h5 class="mb-0 text-success">{{ days_active }}</h5>
                         <small class="text-muted">Days Active</small>
                     </div>
                 </div>
                 
-                <hr>
+                <hr style="border-color: var(--glass-border);">
                 
                 <div class="text-muted small">
                     <i class="bi bi-calendar me-1"></i>
@@ -59,17 +59,17 @@
         <!-- Quick Actions -->
         <div class="card mt-3">
             <div class="card-header">
-                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                <h6 class="mb-0" style="color: var(--text-primary);"><i class="bi bi-lightning me-2" style="color: #ffc107;"></i>Quick Actions</h6>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
                     <a href="{% url 'chat' %}" class="btn btn-primary">
                         <i class="bi bi-chat-dots me-2"></i>Start Chatting
                     </a>
-                    <a href="{% url 'dashboard' %}" class="btn btn-outline-info">
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
                         <i class="bi bi-graph-up me-2"></i>View Dashboard
                     </a>
-                    <a href="{% url 'deleteAcc' %}" class="btn btn-outline-danger">
+                    <a href="{% url 'deleteAcc' %}" class="btn btn-danger">
                         <i class="bi bi-trash me-2"></i>Delete Account
                     </a>
                 </div>
@@ -81,8 +81,8 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-person-gear me-2"></i>Edit Profile
+                <h5 class="mb-0" style="color: var(--text-primary);">
+                    <i class="bi bi-person-gear me-2" style="color: var(--accent-blue);"></i>Edit Profile
                 </h5>
             </div>
             <div class="card-body">
@@ -90,7 +90,7 @@
                     {% csrf_token %}
                     
                     <!-- Personal Information -->
-                    <h6 class="text-primary mb-3">Personal Information</h6>
+                    <h6 class="mb-3" style="color: var(--accent-blue); font-weight: 600;">Personal Information</h6>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -132,7 +132,7 @@
                     </div>
                     
                     <!-- Profile Information -->
-                    <h6 class="text-primary mb-3 mt-4">Profile Information</h6>
+                    <h6 class="mb-3 mt-4" style="color: var(--accent-purple); font-weight: 600;">Profile Information</h6>
                     
                     <div class="mb-3">
                         <label for="{{ form.bio.id_for_label }}" class="form-label">
@@ -155,7 +155,13 @@
                         <label for="{{ form.avatar.id_for_label }}" class="form-label">
                             <i class="bi bi-image me-1"></i>Profile Picture
                         </label>
-                        {{ form.avatar }}
+                        <div class="profile-avatar-input-wrapper d-flex align-items-center gap-2">
+                            {{ form.avatar }}
+                            <button type="button" class="btn btn-secondary btn-sm" id="avatarUploadButton">
+                                <i class="bi bi-upload me-1"></i>Choose Image
+                            </button>
+                            <span class="text-muted small" id="avatarFileName">No file chosen</span>
+                        </div>
                         {% if form.avatar.errors %}
                             <div class="text-danger small">
                                 {% for error in form.avatar.errors %}
@@ -170,10 +176,10 @@
                     
                     <!-- Save Button -->
                     <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-2"></i>Save Changes
                         </button>
-                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
                         </a>
                     </div>
@@ -184,32 +190,32 @@
         <!-- Account Information -->
         <div class="card mt-4">
             <div class="card-header">
-                <h6 class="mb-0">
-                    <i class="bi bi-shield-check me-2"></i>Account Information
+                <h6 class="mb-0" style="color: var(--text-primary);">
+                    <i class="bi bi-shield-check me-2" style="color: #28a745;"></i>Account Information
                 </h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p class="mb-2">
+                        <p class="mb-2" style="color: var(--text-primary);">
                             <strong>Username:</strong> {{ user.username }}
                         </p>
-                        <p class="mb-2">
+                        <p class="mb-2" style="color: var(--text-primary);">
                             <strong>Email:</strong> {{ user.email }}
                         </p>
-                        <p class="mb-2">
+                        <p class="mb-2" style="color: var(--text-primary);">
                             <strong>Date Joined:</strong> {{ user.date_joined|date:"F d, Y" }}
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <p class="mb-2">
+                        <p class="mb-2" style="color: var(--text-primary);">
                             <strong>Last Login:</strong> {{ user.last_login|date:"F d, Y H:i" }}
                         </p>
-                        <p class="mb-2">
+                        <p class="mb-2" style="color: var(--text-primary);">
                             <strong>Account Status:</strong> 
                             <span class="badge bg-success">Active</span>
                         </p>
-                        <p class="mb-2">
+                        <p class="mb-2" style="color: var(--text-primary);">
                             <strong>Privacy:</strong> 
                             <span class="text-success">
                                 <i class="bi bi-shield-check me-1"></i>Protected
@@ -221,26 +227,26 @@
         </div>
         
         <!-- Privacy Notice -->
-        <div class="card mt-4 border-info">
-            <div class="card-header bg-info bg-opacity-10">
-                <h6 class="mb-0 text-info">
+        <div class="card mt-4">
+            <div class="card-header" style="background: rgba(23, 162, 184, 0.1);">
+                <h6 class="mb-0" style="color: var(--accent-blue);">
                     <i class="bi bi-info-circle me-2"></i>Privacy & Data
                 </h6>
             </div>
             <div class="card-body">
-                <p class="mb-2">
+                <p class="mb-2" style="color: var(--text-primary);">
                     <i class="bi bi-check-circle text-success me-2"></i>
                     All your conversations are encrypted and stored securely
                 </p>
-                <p class="mb-2">
+                <p class="mb-2" style="color: var(--text-primary);">
                     <i class="bi bi-check-circle text-success me-2"></i>
                     Your data is never shared with third parties
                 </p>
-                <p class="mb-2">
+                <p class="mb-2" style="color: var(--text-primary);">
                     <i class="bi bi-check-circle text-success me-2"></i>
                     You can delete your account and data at any time
                 </p>
-                <p class="mb-0">
+                <p class="mb-0" style="color: var(--text-primary);">
                     <i class="bi bi-check-circle text-success me-2"></i>
                     AI responses are generated locally and not stored externally
                 </p>
@@ -253,21 +259,38 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Preview avatar upload
     const avatarInput = document.getElementById('{{ form.avatar.id_for_label }}');
-    if (avatarInput) {
-        avatarInput.addEventListener('change', function(e) {
+    const uploadButton = document.getElementById('avatarUploadButton');
+    const fileNameLabel = document.getElementById('avatarFileName');
+
+    if (uploadButton && avatarInput) {
+        uploadButton.addEventListener('click', function () {
+            avatarInput.click();
+        });
+
+        avatarInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // You could add avatar preview functionality here
-                    console.log('Avatar file selected:', file.name);
-                };
-                reader.readAsDataURL(file);
+                fileNameLabel.textContent = file.name;
+            } else {
+                fileNameLabel.textContent = 'No file chosen';
             }
         });
     }
 });
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hide global navbar and footer for this page */
+    .glassmorphic-footer {
+        display: none !important;
+    }
+
+    /* Ensure dropdown appears above glass containers and messages */
+    .glassmorphic-dropdown {
+        z-index: 1400 !important;
+    }
+</style>
 {% endblock %}
