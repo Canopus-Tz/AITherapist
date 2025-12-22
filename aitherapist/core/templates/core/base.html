@@ -42,7 +42,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
+                        <!--<li class="nav-item">
                             <a class="nav-link neumorphic-nav-link {% if request.resolver_match.url_name == 'chat' %}active{% endif %}" href="{% url 'chat' %}">
                                 <i class="bi bi-chat-dots me-1"></i>Chat
                             </a>
@@ -51,13 +51,13 @@
                             <a class="nav-link neumorphic-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
                                 <i class="bi bi-graph-up me-1"></i>Dashboard
                             </a>
-                        </li>
+                        </li>-->
                     {% endif %}
                 </ul>
                 
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
+                        <!--<li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle neumorphic-nav-link" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.username }}
                             </a>
@@ -73,7 +73,7 @@
                                     </form>
                                 </li>
                             </ul>
-                        </li>
+                        </li>-->
                     {% else %}
                         <!--<li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">Login</a>
