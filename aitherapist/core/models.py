@@ -16,6 +16,20 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s Profile"
 
 
+class Conversation(models.Model):
+    """Logical conversation grouping for chats"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Conversation for {self.user.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+
 class Chat(models.Model):
     """Store chat conversations between user and AI"""
     SENTIMENT_CHOICES = [
@@ -25,6 +39,7 @@ class Chat(models.Model):
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, null=True, blank=True, related_name='chats')
     user_message = models.TextField()
     ai_response = models.TextField()
     sentiment = models.CharField(max_length=10, choices=SENTIMENT_CHOICES)
