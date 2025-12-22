@@ -10,11 +10,12 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max
+from django.db.utils import OperationalError
 from django.contrib.auth.models import User
 
 from .forms import CustomUserCreationForm, UserProfileForm, ChatMessageForm
-from .models import UserProfile, Chat, MoodLog, EmailVerificationOTP
+from .models import UserProfile, Chat, MoodLog, EmailVerificationOTP, Conversation
 from .ai_therapist import ai_therapist 
 from .ai.gemini_client import get_gemini_response
 from .email_utils import send_otp_email
@@ -152,14 +153,45 @@ def logout_view(request):
 
 @login_required
 def chat_view(request):
-    """Main chat interface"""
-    # Get recent chats for this user
-    recent_chats = Chat.objects.filter(user=request.user)[:20]
+    """Main chat interface with conversation support. Safe fallback if migrations aren't applied yet."""
+    try:
+        # Determine current conversation from query param or use/create latest
+        conv_id = request.GET.get('conversation')
+        if conv_id:
+            try:
+                conversation = Conversation.objects.get(id=conv_id, user=request.user)
+            except Conversation.DoesNotExist:
+                conversation = None
+        else:
+            # Get latest conversation or None
+            conversation = Conversation.objects.filter(user=request.user).first()
+
+        if not conversation:
+            # Create a new conversation for the user
+            conversation = Conversation.objects.create(user=request.user)
+
+        # Load chats for the conversation
+        messages = Chat.objects.filter(user=request.user, conversation=conversation).order_by('timestamp')
+
+        # Recent conversations for sidebar (show last message snippet/time)
+        recent_conversations = Conversation.objects.filter(user=request.user).annotate(
+            last_msg_time=Max('chats__timestamp')
+        ).order_by('-last_msg_time')[:20]
+
+    except OperationalError:
+        # Database schema may not include Conversation table yet (migrations not applied).
+        # Fall back to legacy behavior so the page remains usable during dev.
+        conversation = None
+        messages = Chat.objects.filter(user=request.user).order_by('-timestamp')[:20]
+        recent_conversations = []
+
     form = ChatMessageForm()
-    
+
     context = {
-        'recent_chats': recent_chats,
+        'recent_conversations': recent_conversations,
         'form': form,
+        'messages': messages,
+        'conversation': conversation,
     }
     return render(request, 'core/chat.html', context)
 
@@ -181,14 +213,38 @@ def send_message(request):
         #GOOGLE GEMINI RESPONSE
         ai_response = get_gemini_response(user_message)
 
+        # Associate chat with conversation if provided
+        conv_id = data.get('conversation_id')
+        conversation = None
+        try:
+            if conv_id:
+                try:
+                    conversation = Conversation.objects.get(id=conv_id, user=request.user)
+                except Conversation.DoesNotExist:
+                    conversation = None
+
+            if not conversation:
+                # Use latest conversation if exists else create new
+                conversation = Conversation.objects.filter(user=request.user).first()
+                if not conversation:
+                    conversation = Conversation.objects.create(user=request.user)
+        except OperationalError:
+            # Conversation table probably doesn't exist yet - fall back to no conversation
+            conversation = None
+
         # Save chat
         chat = Chat.objects.create(
             user=request.user,
+            conversation=conversation,
             user_message=user_message,
             ai_response=ai_response,
             sentiment=sentiment,
             confidence_score=confidence,
         )
+
+        # Update conversation timestamp
+        conversation.updated_at = chat.timestamp
+        conversation.save()
 
         # Update mood log
         MoodLog.update_or_create_daily_log(request.user, sentiment)
@@ -198,7 +254,8 @@ def send_message(request):
             "ai_response": ai_response,
             "sentiment": sentiment,
             "confidence": round(confidence, 2),
-            "timestamp": chat.timestamp.strftime("%H:%M")
+            "timestamp": chat.timestamp.strftime("%H:%M"),
+            "conversation_id": conversation.id
         })
 
     except json.JSONDecodeError:
@@ -424,3 +481,50 @@ def generate_insights(user, weekly_stats, total_stats, mood_logs):
             break
     
     return insights[:4]  # Limit to 4 insights
+
+
+@login_required
+@require_POST
+def new_chat(request):
+    """Create a new conversation and redirect to it"""
+    try:
+        conversation = Conversation.objects.create(user=request.user)
+        return JsonResponse({
+            'success': True,
+            'redirect_url': f"/chat/?conversation={conversation.id}",
+            'conversation_id': conversation.id
+        })
+    except OperationalError:
+        return JsonResponse({'success': False, 'error': 'Database schema not ready. Please run migrations.'}, status=500)
+
+
+@login_required
+@require_POST
+def clear_chat(request):
+    """Delete the conversation and its chats, then create a fresh conversation and redirect"""
+    try:
+        try:
+            data = json.loads(request.body)
+            conv_id = data.get('conversation_id')
+        except Exception:
+            conv_id = None
+
+        conversation = None
+        if conv_id:
+            try:
+                conversation = Conversation.objects.get(id=conv_id, user=request.user)
+            except Conversation.DoesNotExist:
+                conversation = None
+
+        if conversation:
+            conversation.delete()
+
+        # Create a new conversation to continue in
+        new_conv = Conversation.objects.create(user=request.user)
+        return JsonResponse({
+            'success': True,
+            'redirect_url': f"/chat/?conversation={new_conv.id}",
+            'conversation_id': new_conv.id
+        })
+    except OperationalError:
+        return JsonResponse({'success': False, 'error': 'Database schema not ready. Please run migrations.'}, status=500)

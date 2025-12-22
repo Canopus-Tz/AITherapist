@@ -8,7 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chatMessages');
     const typingIndicator = document.getElementById('typingIndicator');
     const getCopingStrategyBtn = document.getElementById('getCopingStrategy');
+    const newChatBtn = document.getElementById('newChatBtn');
     const clearChatBtn = document.getElementById('clearChat');
+    const mainColumn = document.querySelector('.chat-main-column');
+    let currentConversationId = mainColumn?.dataset?.conversationId || null;
     
     // Initialize chat functionality
     initializeChat();
@@ -39,6 +42,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear chat handler
         if (clearChatBtn) {
             clearChatBtn.addEventListener('click', confirmClearChat);
+        }
+        
+        // New chat handler
+        if (newChatBtn) {
+            newChatBtn.addEventListener('click', startNewChat);
         }
         
         // Auto-resize input
@@ -78,6 +86,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add AI response
                 addAIMessage(response.ai_response, response.sentiment, response.timestamp);
                 
+                // Update current conversation id if server returned one
+                if (response.conversation_id) {
+                    currentConversationId = response.conversation_id;
+                    if (mainColumn) mainColumn.dataset.conversationId = response.conversation_id;
+                }
+
                 // Show success feedback
                 showSuccessFeedback();
             } else {
@@ -97,15 +111,16 @@ document.addEventListener('DOMContentLoaded', function() {
     async function sendMessageToServer(message) {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
+        const payload = { message: message };
+        if (currentConversationId) payload.conversation_id = currentConversationId;
+        
         const response = await fetch('/send-message/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify({
-                message: message
-            })
+            body: JSON.stringify(payload)
         });
         
         if (!response.ok) {
@@ -183,9 +198,18 @@ document.addEventListener('DOMContentLoaded', function() {
         return sentimentMap[sentiment] || sentimentMap['neutral'];
     }
     
+    function escapeHtml(unsafe) {
+        return unsafe
+             .replace(/&/g, '&amp;')
+             .replace(/</g, '&lt;')
+             .replace(/>/g, '&gt;')
+             .replace(/"/g, '&quot;')
+             .replace(/'/g, '&#039;');
+    }
+
     function formatMessage(message) {
-        // Convert line breaks to <br> tags
-        return message.replace(/\n/g, '<br>');
+        let cleaned = String(message).replace(/\{\{.*?\}\}/g, '');
+        return escapeHtml(cleaned).replace(/\n/g, '<br>');
     }
     
     function showTypingIndicator() {
@@ -352,40 +376,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function confirmClearChat() {
-        if (confirm('Are you sure you want to clear this chat session? This will only clear the current view, your chat history will still be saved.')) {
-            // Clear current chat messages (but keep welcome message)
-            const userMessages = chatMessages.querySelectorAll('.message-wrapper:not(:first-child)');
-            userMessages.forEach(msg => msg.remove());
-            
-            // Show confirmation
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 400px;';
-            alertDiv.innerHTML = `
-                <i class="bi bi-check-circle me-2"></i>Chat cleared successfully!
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            document.body.appendChild(alertDiv);
-            setTimeout(() => alertDiv.remove(), 3000);
+    async function startNewChat() {
+        // Ask server to create a new conversation and redirect
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const resp = await fetch('/chat/new/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({})
+            });
+            const data = await resp.json();
+            if (data.success && data.redirect_url) {
+                window.location.href = data.redirect_url;
+                return;
+            }
+        } catch (err) {
+            console.error('Failed to start new chat', err);
         }
+
+        // Fallback: clear UI only
+        const messages = chatMessages.querySelectorAll('.message-wrapper');
+        // Keep the first one (welcome message)
+        for (let i = 1; i < messages.length; i++) {
+            messages[i].remove();
+        }
+
+        // Optional: Reset active state in sidebar
+        document.querySelectorAll('.chat-history-item').forEach(i => i.classList.remove('active'));
+
+        // Focus input
+        messageInput.value = '';
+        autoResizeInput();
+        messageInput.focus();
+
+        // Feedback
+        showSuccessFeedback();
+    }
+
+    async function confirmClearChat() {
+        if (!confirm('Are you sure you want to clear this chat session? This will delete the conversation and its history.')) return;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const resp = await fetch('/chat/clear/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ conversation_id: currentConversationId })
+            });
+            const data = await resp.json();
+            if (data.success && data.redirect_url) {
+                window.location.href = data.redirect_url;
+                return;
+            }
+        } catch (err) {
+            console.error('Failed to clear chat', err);
+        }
+
+        // Fallback: local clear
+        startNewChat();
     }
     
     // Handle "Get Another" strategy button
     document.getElementById('getAnotherStrategy')?.addEventListener('click', showCopingStrategy);
     
-    // Handle chat history item clicks
+    // Handle chat history item clicks (redirect to conversation)
     document.querySelectorAll('.chat-history-item').forEach(item => {
         item.addEventListener('click', function() {
             // Add visual feedback
             document.querySelectorAll('.chat-history-item').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
-            
-            // You could implement loading specific chat history here
-            // For now, just provide feedback
-            const chatId = this.getAttribute('data-chat-id');
-            console.log('Loading chat:', chatId);
+
+            const convId = this.getAttribute('data-conv-id');
+            if (convId) {
+                window.location.href = `/chat/?conversation=${convId}`;
+            }
         });
     });
     
