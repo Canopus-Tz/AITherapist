@@ -6,31 +6,32 @@
 
 {% block main_class %}{% endblock %}
 
+{% block main_wrapper %}
 {% block content %}
 <!-- Hero Section -->
-<div class="bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: black;">
+<div class="container-fluid py-5" style="background: transparent;">
     <div class="container py-5">
         <div class="row align-items-center min-vh-50">
             <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Your Mental Health Companion</h1>
-                <p class="lead mb-4">
+                <h1 class="display-4 fw-bold mb-4 text-glass">Your Mental Health Companion</h1>
+                <p class="lead mb-4 text-glass">
                     Talk to our AI therapist anytime, anywhere. Get empathetic responses, 
                     track your emotional journey, and discover insights about your mental wellness.
                 </p>
                 <div class="d-flex gap-3">
-                    <a href="{% url 'register' %}" class="btn btn-light btn-lg" style="background-color:blue; color: white">
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
                         <i class="bi bi-person-plus me-2"></i>Get Started Free
                     </a>
-                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg" style="background-color:blue">
+                    <a href="{% url 'login' %}" class="btn btn-secondary btn-lg">
                         <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
                     </a>
                 </div>
             </div>
             <div class="col-lg-6 text-center">
                 <div class="position-relative">
-                    <i class="bi bi-chat-heart display-1" style="font-size: 8rem; opacity: 0.8;"></i>
+                    <i class="bi bi-chat-heart display-1 text-glass" style="font-size: 8rem; opacity: 0.9;"></i>
                     <div class="position-absolute top-0 start-50 translate-middle-x">
-                        <i class="bi bi-stars text-warning" style="font-size: 2rem; margin-top: -1rem;"></i>
+                        <i class="bi bi-stars" style="font-size: 2rem; margin-top: -1rem; color: #ffc107;"></i>
                     </div>
                 </div>
             </div>
@@ -42,19 +43,19 @@
 <div class="container my-5">
     <div class="row text-center mb-5">
         <div class="col-12">
-            <h2 class="display-6 fw-bold text-primary">Why Choose AI Therapist?</h2>
+            <h2 class="display-6 fw-bold" style="color: var(--text-primary);">Why Choose AI Therapist?</h2>
             <p class="lead text-muted">Accessible, confidential, and always available mental health support</p>
         </div>
     </div>
     
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100">
                 <div class="card-body text-center p-4">
-                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="bi bi-chat-dots text-primary" style="font-size: 2rem;"></i>
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: rgba(108, 142, 255, 0.2);">
+                        <i class="bi bi-chat-dots" style="font-size: 2rem; color: var(--accent-blue);"></i>
                     </div>
-                    <h5 class="card-title mt-3">24/7 Availability</h5>
+                    <h5 class="card-title mt-3" style="color: var(--text-primary);">24/7 Availability</h5>
                     <p class="card-text text-muted">
                         Our AI therapist is always here when you need support, 
                         day or night. No appointments necessary.
@@ -64,12 +65,12 @@
         </div>
         
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100">
                 <div class="card-body text-center p-4">
-                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: rgba(40, 167, 69, 0.2);">
+                        <i class="bi bi-shield-check" style="font-size: 2rem; color: #28a745;"></i>
                     </div>
-                    <h5 class="card-title mt-3">Private & Safe</h5>
+                    <h5 class="card-title mt-3" style="color: var(--text-primary);">Private & Safe</h5>
                     <p class="card-text text-muted">
                         Your conversations are confidential and secure. 
                         Share your thoughts freely in a judgment-free space.
@@ -79,12 +80,12 @@
         </div>
         
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100">
                 <div class="card-body text-center p-4">
-                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: rgba(157, 122, 255, 0.2);">
+                        <i class="bi bi-graph-up" style="font-size: 2rem; color: var(--accent-purple);"></i>
                     </div>
-                    <h5 class="card-title mt-3">Mood Tracking</h5>
+                    <h5 class="card-title mt-3" style="color: var(--text-primary);">Mood Tracking</h5>
                     <p class="card-text text-muted">
                         Track your emotional patterns over time and gain 
                         insights into your mental health journey.
@@ -96,55 +97,53 @@
 </div>
 
 <!-- How it Works -->
-<div class="bg-light py-5">
-    <div class="container">
-        <div class="row text-center mb-5">
-            <div class="col-12">
-                <h2 class="display-6 fw-bold text-primary">How It Works</h2>
-                <p class="lead text-muted">Simple steps to better mental wellness</p>
+<div class="container py-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="display-6 fw-bold" style="color: var(--text-primary);">How It Works</h2>
+            <p class="lead text-muted">Simple steps to better mental wellness</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-3 text-center">
+            <div class="position-relative">
+                <div class="text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);">
+                    <span class="fw-bold">1</span>
+                </div>
             </div>
+            <h5 class="mt-3" style="color: var(--text-primary);">Sign Up</h5>
+            <p class="text-muted">Create your free account in seconds</p>
         </div>
         
-        <div class="row g-4">
-            <div class="col-md-3 text-center">
-                <div class="position-relative">
-                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <span class="fw-bold">1</span>
-                    </div>
+        <div class="col-md-3 text-center">
+            <div class="position-relative">
+                <div class="text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);">
+                    <span class="fw-bold">2</span>
                 </div>
-                <h5 class="mt-3">Sign Up</h5>
-                <p class="text-muted">Create your free account in seconds</p>
             </div>
-            
-            <div class="col-md-3 text-center">
-                <div class="position-relative">
-                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <span class="fw-bold">2</span>
-                    </div>
+            <h5 class="mt-3" style="color: var(--text-primary);">Start Chatting</h5>
+            <p class="text-muted">Share your thoughts with our AI therapist</p>
+        </div>
+        
+        <div class="col-md-3 text-center">
+            <div class="position-relative">
+                <div class="text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);">
+                    <span class="fw-bold">3</span>
                 </div>
-                <h5 class="mt-3">Start Chatting</h5>
-                <p class="text-muted">Share your thoughts with our AI therapist</p>
             </div>
-            
-            <div class="col-md-3 text-center">
-                <div class="position-relative">
-                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <span class="fw-bold">3</span>
-                    </div>
+            <h5 class="mt-3" style="color: var(--text-primary);">Get Support</h5>
+            <p class="text-muted">Receive empathetic responses and coping strategies</p>
+        </div>
+        
+        <div class="col-md-3 text-center">
+            <div class="position-relative">
+                <div class="text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);">
+                    <span class="fw-bold">4</span>
                 </div>
-                <h5 class="mt-3">Get Support</h5>
-                <p class="text-muted">Receive empathetic responses and coping strategies</p>
             </div>
-            
-            <div class="col-md-3 text-center">
-                <div class="position-relative">
-                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <span class="fw-bold">4</span>
-                    </div>
-                </div>
-                <h5 class="mt-3">Track Progress</h5>
-                <p class="text-muted">Monitor your mood trends and insights</p>
-            </div>
+            <h5 class="mt-3" style="color: var(--text-primary);">Track Progress</h5>
+            <p class="text-muted">Monitor your mood trends and insights</p>
         </div>
     </div>
 </div>
@@ -153,7 +152,7 @@
 <div class="container my-5 text-center">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <h2 class="display-6 fw-bold text-primary mb-4">Ready to Start Your Wellness Journey?</h2>
+            <h2 class="display-6 fw-bold mb-4" style="color: var(--text-primary);">Ready to Start Your Wellness Journey?</h2>
             <p class="lead text-muted mb-4">
                 Join thousands of users who have found support and insights through AI Therapist. 
                 Your mental health matters, and we're here to help.
@@ -166,15 +165,16 @@
 </div>
 
 <!-- Disclaimer -->
-<div class="bg-warning bg-opacity-10 py-3">
-    <div class="container">
-        <div class="text-center">
+<div class="container py-3">
+    <div class="card">
+        <div class="card-body text-center">
             <p class="mb-0 text-muted small">
-                <i class="bi bi-info-circle me-2"></i>
+                <i class="bi bi-info-circle me-2" style="color: #ffc107;"></i>
                 <strong>Important:</strong> AI Therapist is not a replacement for professional mental health care. 
                 If you're experiencing a mental health crisis, please contact a licensed professional or emergency services.
             </p>
         </div>
     </div>
 </div>
+{% endblock %}
 {% endblock %}

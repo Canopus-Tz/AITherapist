@@ -4,19 +4,23 @@
 
 {% block title %}Login - AI Therapist{% endblock %}
 
+{% block main_class %}container my-5{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
             <div class="card-body p-5">
                 <div class="text-center mb-4">
-                    <i class="bi bi-box-arrow-in-right text-primary" style="font-size: 3rem;"></i>
-                    <h2 class="card-title text-primary mt-3">Welcome Back</h2>
+                    <div class="mb-3">
+                        <i class="bi bi-box-arrow-in-right" style="font-size: 3.5rem; color: var(--accent-blue);"></i>
+                    </div>
+                    <h2 class="card-title mt-3" style="color: var(--text-primary); font-weight: 600;">Welcome Back</h2>
                     <p class="text-muted">Sign in to continue your wellness journey</p>
                 </div>
                 
                 {% if form.errors %}
-                    <div class="alert alert-danger">
+                    <div class="alert glassmorphic-alert alert-danger">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         {% for field, errors in form.errors.items %}
                             {% for error in errors %}
@@ -48,7 +52,7 @@
                     <!-- Remember Me -->
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" id="rememberMe">
-                        <label class="form-check-label text-muted" for="rememberMe">
+                        <label class="form-check-label" for="rememberMe">
                             Remember me on this device
                         </label>
                     </div>
@@ -65,7 +69,7 @@
                 <div class="text-center">
                     <p class="mb-0">
                         Don't have an account? 
-                        <a href="{% url 'register' %}" class="text-decoration-none">Create one here</a>
+                        <a href="{% url 'register' %}" class="text-decoration-none" style="color: var(--accent-blue); font-weight: 500;">Create one here</a>
                     </p>
                 </div>
             </div>
@@ -76,23 +80,25 @@
 <!-- Quick Access Info -->
 <div class="row mt-4 justify-content-center">
     <div class="col-md-8 col-lg-6">
-        <div class="bg-light rounded p-4">
-            <div class="text-center">
-                <h6 class="text-primary mb-3">
-                    <i class="bi bi-info-circle me-2"></i>Quick Access
-                </h6>
-                <div class="row g-3 text-center">
-                    <div class="col-4">
-                        <i class="bi bi-chat-heart text-primary d-block mb-2" style="font-size: 1.5rem;"></i>
-                        <small class="text-muted">Instant<br>Support</small>
-                    </div>
-                    <div class="col-4">
-                        <i class="bi bi-shield-check text-success d-block mb-2" style="font-size: 1.5rem;"></i>
-                        <small class="text-muted">Private &<br>Secure</small>
-                    </div>
-                    <div class="col-4">
-                        <i class="bi bi-graph-up text-info d-block mb-2" style="font-size: 1.5rem;"></i>
-                        <small class="text-muted">Track<br>Progress</small>
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="text-center">
+                    <h6 class="mb-3" style="color: var(--accent-blue); font-weight: 600;">
+                        <i class="bi bi-info-circle me-2"></i>Quick Access
+                    </h6>
+                    <div class="row g-3 text-center">
+                        <div class="col-4">
+                            <i class="bi bi-chat-heart d-block mb-2" style="font-size: 1.8rem; color: var(--accent-blue);"></i>
+                            <small class="text-muted">Instant<br>Support</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="bi bi-shield-check d-block mb-2" style="font-size: 1.8rem; color: #28a745;"></i>
+                            <small class="text-muted">Private &<br>Secure</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="bi bi-graph-up d-block mb-2" style="font-size: 1.8rem; color: var(--accent-purple);"></i>
+                            <small class="text-muted">Track<br>Progress</small>
+                        </div>
                     </div>
                 </div>
             </div>
