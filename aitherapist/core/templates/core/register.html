@@ -1,17 +1,21 @@
 <!-- core/templates/core/register.html -->
-{% extends 'core/base.html' %}%%
+{% extends 'core/base.html' %}
 {% load static %}
 
 {% block title %}Register - AI Therapist{% endblock %}
 
+{% block main_class %}container my-5{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
+    <div class="col-md-7 col-lg-6">
+        <div class="card">
             <div class="card-body p-5">
                 <div class="text-center mb-4">
-                    <i class="bi bi-person-plus-fill text-primary" style="font-size: 3rem;"></i>
-                    <h2 class="card-title text-primary mt-3">Create Your Account</h2>
+                    <div class="mb-3">
+                        <i class="bi bi-person-plus-fill" style="font-size: 3.5rem; color: var(--accent-purple);"></i>
+                    </div>
+                    <h2 class="card-title mt-3" style="color: var(--text-primary); font-weight: 600;">Create Your Account</h2>
                     <p class="text-muted">Join thousands finding support through AI therapy</p>
                 </div>
                 
@@ -109,9 +113,9 @@
                     </div>
                     
                     <!-- Privacy Notice -->
-                    <div class="mb-4 p-3 bg-light rounded">
-                        <p class="small text-muted mb-0">
-                            <i class="bi bi-shield-check text-success me-1"></i>
+                    <div class="mb-4 p-3 card">
+                        <p class="small mb-0" style="color: var(--text-primary);">
+                            <i class="bi bi-shield-check me-1" style="color: #28a745;"></i>
                             <strong>Privacy Commitment:</strong> Your conversations are confidential and secure. 
                             We never share your personal information or chat history with third parties.
                         </p>
@@ -129,7 +133,7 @@
                 <div class="text-center">
                     <p class="mb-0">
                         Already have an account? 
-                        <a href="{% url 'login' %}" class="text-decoration-none">Sign in here</a>
+                        <a href="{% url 'login' %}" class="text-decoration-none" style="color: var(--accent-blue); font-weight: 500;">Sign in here</a>
                     </p>
                 </div>
             </div>
@@ -140,24 +144,36 @@
 <!-- Benefits Section -->
 <div class="row mt-5">
     <div class="col-12">
-        <div class="text-center">
-            <h4 class="text-primary mb-4">What You Get With AI Therapist</h4>
+        <div class="text-center mb-4">
+            <h4 class="mb-4" style="color: var(--text-primary); font-weight: 600;">What You Get With AI Therapist</h4>
         </div>
-        <div class="row g-3">
+        <div class="row g-4">
             <div class="col-md-4 text-center">
-                <i class="bi bi-clock text-primary mb-2" style="font-size: 2rem;"></i>
-                <h6>24/7 Support</h6>
-                <p class="text-muted small">Always available when you need to talk</p>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-clock mb-3 d-block" style="font-size: 2.5rem; color: var(--accent-blue);"></i>
+                        <h6 style="color: var(--text-primary); font-weight: 600;">24/7 Support</h6>
+                        <p class="text-muted small mb-0">Always available when you need to talk</p>
+                    </div>
+                </div>
             </div>
             <div class="col-md-4 text-center">
-                <i class="bi bi-graph-up text-success mb-2" style="font-size: 2rem;"></i>
-                <h6>Mood Tracking</h6>
-                <p class="text-muted small">Visualize your emotional journey over time</p>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-graph-up mb-3 d-block" style="font-size: 2.5rem; color: #28a745;"></i>
+                        <h6 style="color: var(--text-primary); font-weight: 600;">Mood Tracking</h6>
+                        <p class="text-muted small mb-0">Visualize your emotional journey over time</p>
+                    </div>
+                </div>
             </div>
             <div class="col-md-4 text-center">
-                <i class="bi bi-lightbulb text-warning mb-2" style="font-size: 2rem;"></i>
-                <h6>Coping Strategies</h6>
-                <p class="text-muted small">Get personalized techniques for wellness</p>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-lightbulb mb-3 d-block" style="font-size: 2.5rem; color: var(--accent-purple);"></i>
+                        <h6 style="color: var(--text-primary); font-weight: 600;">Coping Strategies</h6>
+                        <p class="text-muted small mb-0">Get personalized techniques for wellness</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

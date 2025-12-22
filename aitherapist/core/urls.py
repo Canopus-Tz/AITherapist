@@ -14,11 +14,13 @@ urlpatterns = [
     
     # Main app features
     path('chat/', views.chat_view, name='chat'),
+    path('chat/new/', views.new_chat, name='new_chat'),
+    path('chat/clear/', views.clear_chat, name='clear_chat'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('profile/', views.profile_view, name='profile'),
     path('deleteAcc/', views.deleteAcc_view, name='deleteAcc'),
     
-    # AJAX endpoints
+    # endpoints
     path('send-message/', views.send_message, name='send_message'),
     path('api/coping-strategy/', views.get_coping_strategy, name='get_coping_strategy'),
 ]
