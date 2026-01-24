@@ -45,7 +45,7 @@ body {
     line-height: 1.6;
     color: var(--text-primary);
     overflow-x: hidden;
-    position: relative;
+    position: fixed;
     min-height: 100vh;
 }
 
@@ -201,6 +201,7 @@ body {
     z-index: 1200;
     padding: 0.5rem 0;
     margin-top: 0.5rem;
+    overflow: hidden !important; /* Contain hover effects within dropdown */
 }
 
 .glassmorphic-dropdown-item {
@@ -212,7 +213,7 @@ body {
 
 .glassmorphic-dropdown-item:hover {
     background: rgba(255, 255, 255, 0.2) !important;
-    transform: translateX(5px);
+    transform: none !important; /* Remove translateX to prevent overflow */
     color: var(--text-primary) !important;
 }
 
@@ -368,6 +369,20 @@ body {
                 inset 2px 2px 5px rgba(0, 0, 0, 0.1) !important;
     outline: none;
     color: var(--text-primary) !important;
+}
+
+/* Improve helper/secondary text contrast so it is readable on the dark glass background */
+.form-text,
+small.form-text,
+.profile-avatar-input-wrapper .form-text {
+    color: rgba(226, 232, 240, 0.92) !important; /* slightly lighter than --text-primary */
+    font-size: 0.93rem;
+    line-height: 1.35;
+}
+
+#avatarFileName {
+    color: rgba(226, 232, 240, 0.85) !important;
+    font-size: 0.9rem;
 }
 
 .form-label {
@@ -634,11 +649,18 @@ body {
 
 .chart-container {
     position: relative;
-    height: 300px;
+    width: 100%;
+    height: 400px;
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(10px);
     border-radius: var(--border-radius);
     padding: 1rem;
+    overflow: hidden;
+}
+
+.chart-container canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
 }
 
 .recent-chat-item {
@@ -649,7 +671,7 @@ body {
 }
 
 .recent-chat-item:hover {
-    border-color: var(--accent-blue) !important;
+    border-color: var(--accent-purple) !important;
     background: rgba(255, 255, 255, 0.2);
     transform: translateX(5px);
 }

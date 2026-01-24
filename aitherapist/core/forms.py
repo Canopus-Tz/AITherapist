@@ -64,9 +64,19 @@ class UserProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         if user:
+            # Populate initial values and also ensure HTML value attribute is present
+            # so fields always display current user data even if other rendering quirks occur.
             self.fields['first_name'].initial = user.first_name
+            self.fields['first_name'].widget.attrs['value'] = user.first_name
+            self.fields['first_name'].widget.attrs['placeholder'] = 'First Name'
+
             self.fields['last_name'].initial = user.last_name
+            self.fields['last_name'].widget.attrs['value'] = user.last_name
+            self.fields['last_name'].widget.attrs['placeholder'] = 'Last Name'
+
             self.fields['email'].initial = user.email
+            self.fields['email'].widget.attrs['value'] = user.email
+            self.fields['email'].widget.attrs['placeholder'] = 'your.email@example.com'
             
         # Add Bootstrap classes
         self.fields['first_name'].widget.attrs['class'] = 'form-control'

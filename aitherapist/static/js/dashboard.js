@@ -65,6 +65,13 @@ function initializeMoodTrendChart() {
         return;
     }
     
+    // FIXED: Set canvas dimensions to match container
+    const container = ctx.closest('.chart-container');
+    if (container) {
+        ctx.width = container.clientWidth - 32; // Subtract padding (1rem * 2)
+        ctx.height = container.clientHeight - 32;
+    }
+    
     // Prepare data for the chart
     const labels = chartData.map(item => {
         const date = new Date(item.date);
@@ -109,7 +116,7 @@ function initializeMoodTrendChart() {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'top',
@@ -162,6 +169,13 @@ function initializeMoodDistributionChart() {
     // Debug: Log stats
     console.log('Total Stats:', totalStats);
     
+    // FIXED: Set canvas dimensions to match container
+    const container = ctx.closest('.chart-container');
+    if (container) {
+        ctx.width = container.clientWidth - 32; // Subtract padding (1rem * 2)
+        ctx.height = container.clientHeight - 32;
+    }
+    
     // Calculate total for percentage calculation
     const total = totalStats.positive + totalStats.negative + totalStats.neutral;
     
@@ -196,7 +210,7 @@ function initializeMoodDistributionChart() {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'bottom',

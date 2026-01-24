@@ -137,7 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function addAIMessage(message, sentiment, timestamp) {
-        const messageElement = createMessageElement('ai', message, timestamp, sentiment);
+        // Note: sentiment is received from server for analytics but intentionally not displayed in UI
+        // Sentiment is tracked in the background for mood logging and dashboard analytics
+        const messageElement = createMessageElement('ai', message, '', null);
         chatMessages.appendChild(messageElement);
         scrollToBottom();
     }
@@ -154,14 +156,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const orderClass = isUser ? 'me-3' : '';
         const maxWidthStyle = 'style="max-width: 70%;"';
         
-        let sentimentBadge = '';
-        if (sentiment && !isUser) {
-            const sentimentInfo = getSentimentInfo(sentiment);
-            sentimentBadge = `
-                <small class="text-muted">
-                    Mood: <span class="${sentimentInfo.class}">${sentimentInfo.label} ${sentimentInfo.icon}</span>
-                </small>
-            `;
+        // Don't show sentiment badge or timestamp for AI messages - only show timestamp for user messages
+        let timestampDisplay = '';
+        if (isUser && timestamp) {
+            timestampDisplay = `<div class="mt-1"><small class="opacity-75">${timestamp}</small></div>`;
         }
         
         wrapper.innerHTML = `
@@ -172,11 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 ` : ''}
                 <div class="message-content ${bgClass} rounded p-3 ${orderClass} flex-grow-1" ${maxWidthStyle}>
-                    <p class="mb-1">${formatMessage(message)}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="${isUser ? 'opacity-75' : 'text-muted'}">${timestamp}</small>
-                        ${sentimentBadge}
-                    </div>
+                    <p class="mb-0">${formatMessage(message)}</p>
+                    ${timestampDisplay}
                 </div>
                 ${isUser ? `
                     <div class="${iconBgClass} text-white rounded-circle p-2 flex-shrink-0">
@@ -387,30 +382,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const data = await resp.json();
             if (data.success && data.redirect_url) {
+                // Reset conversation ID before redirect
+                currentConversationId = data.conversation_id;
+                if (mainColumn) mainColumn.dataset.conversationId = data.conversation_id;
+                // Redirect to new chat page (this will load fresh state)
                 window.location.href = data.redirect_url;
                 return;
             }
         } catch (err) {
             console.error('Failed to start new chat', err);
+            showError('Failed to create new chat. Please try again.');
         }
-
-        // Fallback: clear UI only
-        const messages = chatMessages.querySelectorAll('.message-wrapper');
-        // Keep the first one (welcome message)
-        for (let i = 1; i < messages.length; i++) {
-            messages[i].remove();
-        }
-
-        // Optional: Reset active state in sidebar
-        document.querySelectorAll('.chat-history-item').forEach(i => i.classList.remove('active'));
-
-        // Focus input
-        messageInput.value = '';
-        autoResizeInput();
-        messageInput.focus();
-
-        // Feedback
-        showSuccessFeedback();
     }
 
     async function confirmClearChat() {
@@ -425,15 +407,19 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const data = await resp.json();
             if (data.success && data.redirect_url) {
+                // Update conversation ID before redirect
+                currentConversationId = data.conversation_id;
+                if (mainColumn) mainColumn.dataset.conversationId = data.conversation_id;
+                // Redirect to new/remaining conversation (this will load fresh state)
                 window.location.href = data.redirect_url;
                 return;
+            } else {
+                showError(data.error || 'Failed to clear chat. Please try again.');
             }
         } catch (err) {
             console.error('Failed to clear chat', err);
+            showError('Failed to clear chat. Please try again.');
         }
-
-        // Fallback: local clear
-        startNewChat();
     }
     
     // Handle "Get Another" strategy button

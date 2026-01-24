@@ -21,7 +21,7 @@
                 style="overflow-y: auto; overflow-x: hidden; padding: 0.5rem;">
                 {% for conv in recent_conversations %}
                 {% with last=conv.chats.first %}
-                <div class="p-3 chat-history-item" data-conv-id="{{ conv.id }}">
+                <div class="p-3 chat-history-item {% if conversation.id == conv.id %}active{% endif %}" data-conv-id="{{ conv.id }}">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-truncate" style="max-width: 200px; color: var(--text-primary);">
@@ -107,7 +107,7 @@
                                         </a></li>
                                     <li>
                                     </li>
-                                    <li><a class="dropdown-item glassmorphic-dropdown-item" href="#"
+                                    <li><a class="dropdown-item glassmorphic-dropdown-item" href="#" 
                                             id="getCopingStrategy"><i class="bi bi-lightbulb me-2"></i>Get Coping
                                             Strategy</a></li>
                                     <li><a class="dropdown-item glassmorphic-dropdown-item"
@@ -134,9 +134,10 @@
 
             <!-- Messages Area -->
             <div class="flex-grow-1 p-4 scroll-area" id="messagesContainer"
-                style="height: calc(100vh - 300px); overflow-y: auto; background: rgba(255, 255, 255, 0.05);">
+                style="overflow-y: auto; overflow-x: hidden; background: rgba(255, 255, 255, 0.05);">
                 <div id="chatMessages">
-                    <!-- Welcome Message -->
+                    <!-- Welcome Message - Only show if there are no messages in this conversation -->
+                    {% if not messages %}
                     <div class="message-wrapper mb-3">
                         <div class="d-flex align-items-start">
                             <div class="rounded-circle p-2 me-3 flex-shrink-0"
@@ -163,6 +164,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
 
                     <!-- Load messages for current conversation -->
                     {% for chat in messages %}
@@ -170,7 +172,7 @@
                     <div class="message-wrapper mb-3">
                         <div class="d-flex align-items-start justify-content-end">
                             <div class="message-content card flex-grow-1"
-                                style="max-width: 70%; background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);">
+                                style="max-width: 70%; background: linear-gradient(135deg, var(--accent-purple) 100%);">
                                 <div class="card-body text-white">
                                     <p class="mb-1">{{ chat.user_message }}</p>
                                     <small class="opacity-75">{{ chat.timestamp|date:"H:i" }}</small>
@@ -178,7 +180,7 @@
                             </div>
                             <div class="rounded-circle p-2 flex-shrink-0 ms-3"
                                 style="background: rgba(255, 255, 255, 0.2);">
-                                <i class="bi bi-person" style="color: var(--accent-blue);"></i>
+                                <i class="bi bi-person" style="color: var(--accent-purple);"></i>
                             </div>
                         </div>
                     </div>
@@ -192,20 +194,11 @@
                             </div>
                             <div class="message-content card flex-grow-1" style="max-width: 70%;">
                                 <div class="card-body">
-                                    <p class="mb-1" style="color: var(--text-primary);">{{ chat.ai_response|linebreaksbr|safe }}</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                       <!-- <small class="text-muted">{{ chat.timestamp|date:"H:i" }}</small>
-                                        <small class="text-muted">
-                                            Mood:
-                                            {% if chat.sentiment == 'positive' %}
-                                            <span class="text-success">Positive <i class="bi bi-emoji-smile"></i></span>
-                                            {% elif chat.sentiment == 'negative' %}
-                                            <span class="text-danger">Negative <i class="bi bi-emoji-frown"></i></span>
-                                            {% else %}
-                                            <span class="text-muted">Neutral <i class="bi bi-emoji-neutral"></i></span>
-                                            {% endif %}
-                                        </small> -->
-                                    </div>
+                                    {% if chat.ai_response %}
+                                    <p class="mb-0" style="color: var(--text-primary);">{{ chat.ai_response|linebreaksbr|safe }}</p>
+                                    {% else %}
+                                    <p class="mb-0" style="color: var(--text-primary);"><em>No response available</em></p>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -258,7 +251,7 @@
 </div>
 
 <!-- Coping Strategy Modal -->
-<div class="modal fade" id="copingStrategyModal" tabindex="-1">
+<div class="modal fade" id="copingStrategyModal" tabindex="-1" style="position: fixed; z-index: 20000;">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -294,20 +287,43 @@
         display: none !important;
     }
 
+    /* Prevent body and html scrolling on chat page */
+    html, body {
+        overflow: hidden !important;
+        height: 100% !important;
+    }
+
     /* Adjust main container to fill viewport */
     main.container-fluid {
         height: 100vh !important;
         padding: 0 !important;
         margin: 0 !important;
+        overflow: hidden !important;
     }
 
     .chat-main-column {
         height: 100vh !important;
         gap: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
 
+    /* Messages container - only scrollable area */
     #messagesContainer {
         scroll-behavior: smooth;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+    }
+
+    /* Hide mood and timestamp elements in AI response messages */
+    /* Target AI messages: they don't have justify-content-end, user messages do */
+    .message-wrapper > .d-flex:not(.justify-content-end) .message-content small,
+    .message-wrapper > .d-flex:not(.justify-content-end) .message-content .text-muted,
+    .message-wrapper > .d-flex:not(.justify-content-end) .message-content .d-flex.justify-content-between {
+        display: none !important;
     }
 
     /* Sidebar refinement */
@@ -363,6 +379,26 @@
     /* Ensure dropdown appears above glass containers and messages */
     .glassmorphic-dropdown {
         z-index: 1400 !important;
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        overflow: hidden !important; /* Contain hover effects within dropdown */
+        border-radius: var(--border-radius-sm) !important;
+    }
+
+    /* Make dropdown items more clear and visible */
+    .glassmorphic-dropdown-item {
+        color: var(--text-primary) !important;
+        font-weight: 500 !important;
+        opacity: 1 !important;
+        border-radius: 0 !important;
+    }
+
+    .glassmorphic-dropdown-item:hover {
+        color: var(--text-primary) !important;
+        opacity: 1 !important;
+        transform: none !important; /* Remove translateX to prevent overflow */
+        background: rgba(255, 255, 255, 0.2) !important;
     }
 
     /* Aligning padding */
