@@ -6,29 +6,28 @@ Unlike traditional Q&A chatbots, Aitherapist focuses on understanding user emoti
 
 Features
 
-Emotion-Aware Conversations
+1) Emotion-Aware Conversations
 Detects emotional tone and adapts responses accordingly.
 
-Registration and login
+2) Registration and login
 Users can create and sign in to their accounts.
 
-Guided, Therapist-Style Flow
+3) Guided, Therapist-Style Flow
 Uses reflective statements, gentle questions, and supportive suggestions instead of rigid Q&A.
 
-Coping Strategies
+4) Coping Strategies
 Users can get tips on how to explore alternative perspectives.
 
-Clear & New Chat
+5) Clear & New Chat
 Start fresh conversations while maintaining recent chat history.
 
-User Dashboard
+6) User Dashboard
 users can view their account activities and chat analysis.
 
-Clean, Calming UI
+7) Clean, Calming UI
 Designed to reduce cognitive load and encourage openness.
 
 Problem Statement
-
 Many chatbots feel robotic and transactional, which limits their usefulness in emotionally sensitive scenarios.
 Aitherapist addresses this gap by providing a system that:
 
@@ -95,7 +94,7 @@ Future Enhancements
 - Multi-language support
 
 Installation:
-- git clone https://github.com/your-username/Aitherapist.git
+- git clone (https://github.com/Canopus-Tz/AITherapist.git)
 - cd C:\Users\...\AITherapist
 - python -m venv .venv
 - venv\scripts\activate
